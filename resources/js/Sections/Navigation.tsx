@@ -1,6 +1,4 @@
-import { User } from "@/types";
 import { Link, usePage } from "@inertiajs/react";
-import React from "react";
 
 const Navigation = () => {
     const user = usePage().props.auth.user;
