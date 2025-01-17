@@ -9,6 +9,11 @@ Route::get('/', function () {
     return Inertia::render('Welcome');
 });
 
+Route::get('/text-gap', function () {
+    return Inertia::render('TextGap');
+})->middleware(['auth', 'verified'])->name('text-gap');
+
+
 Route::get('/dashboard', function () {
     return Inertia::render('Dashboard');
 })->middleware(['auth', 'verified'])->name('dashboard');

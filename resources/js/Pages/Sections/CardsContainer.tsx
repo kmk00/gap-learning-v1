@@ -16,7 +16,7 @@ const ExcersiceCards = () => {
                     smallTitle="Text gap"
                     title="Fill the missing words inside your text"
                     functionalities={functionalities}
-                    link="/textgap"
+                    link="/text-gap"
                 />
                 <ExcersiceCard
                     smallTitle="Table fill"

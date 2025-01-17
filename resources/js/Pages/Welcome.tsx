@@ -1,8 +1,8 @@
 import ActionText from "@/Components/ActionText";
-import ExcersiceCards from "@/Sections/CardsContainer";
-import Hero from "@/Sections/Hero";
-import Navigation from "@/Sections/Navigation";
-import Purpose from "@/Sections/Purpose";
+import ExcersiceCards from "@/Pages/Sections/CardsContainer";
+import Hero from "@/Pages/Sections/Hero";
+import Navigation from "@/Pages/Sections/Navigation";
+import Purpose from "@/Pages/Sections/Purpose";
 import { Head } from "@inertiajs/react";
 
 export default function Welcome() {
