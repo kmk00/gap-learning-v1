@@ -16,10 +16,6 @@ const AnswerList = ({ answerList, removeAnswerByNumber }: Props) => {
         setAnswerListSorted(answerList);
     }, [answerList]);
 
-    const handleRemoveWord = (word: Answer) => {
-        console.log(word);
-    };
-
     return (
         <div>
             {answerListSorted.map((word, index) => (
