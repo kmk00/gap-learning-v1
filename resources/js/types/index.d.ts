@@ -19,3 +19,9 @@ export type Answer = {
     selected: boolean;
     answerNumber: number | null;
 };
+
+export enum TextGapSteps {
+    PREPARE_TEXT = 1,
+    SELECT_WORDS = 2,
+    SAVE_EXERCISE = 3,
+}

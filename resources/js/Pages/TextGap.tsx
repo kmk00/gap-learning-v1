@@ -4,16 +4,20 @@ import Informations from "./Sections/Informations";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { set, useForm } from "react-hook-form";
 import * as z from "zod";
-import { useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import WordsSelection from "./TextGap/WordsSelection";
-import { Answer } from "@/types";
+import { Answer, TextGapSteps } from "@/types";
 import AnswerList from "./TextGap/AnswerList";
+
+const MAX_TEXT_LENGTH = 1000;
 
 const textSchema = z.object({
     text: z
         .string({ required_error: "Text is required" })
-        .min(3, { message: "The text must be longer than 3 characters" })
-        .max(600, { message: "The text must be shorter than 600 characters" }),
+        .nonempty({ message: "Text is required" })
+        .max(MAX_TEXT_LENGTH, {
+            message: `The text must be shorter than ${MAX_TEXT_LENGTH} characters`,
+        }),
 });
 type FormData = z.infer<typeof textSchema>;
 
@@ -25,30 +29,28 @@ const stepsList = [
 ];
 
 export default function TextGap() {
-    const [step, setStep] = useState(1);
+    const [step, setStep] = useState<TextGapSteps>(TextGapSteps.PREPARE_TEXT);
     const [answerList, setAnswerList] = useState<Answer[]>([]);
+    const [answerNumberToRemove, setAnswerNumberToRemove] = useState<
+        number | null
+    >(null);
 
     const {
         register,
         handleSubmit,
         formState: { errors },
         reset,
+        setError,
         watch,
     } = useForm<FormData>({
         resolver: zodResolver(textSchema),
-        defaultValues: {
-            text: "Lorem ipsum dolor sit, amet consectetur adipisicing elit. Perferendis deserunt fugit architecto tenetur amet aperiam animi saepe corporis veritatis placeat! Labore saepe excepturi asperiores velit, ab iste quasi illum neque!",
-        },
     });
 
-    const [answerNumberToRemove, setAnswerNumberToRemove] = useState<
-        number | null
-    >(null);
-
     const textValue = watch("text");
-    const textLength = textValue ? textValue.length : 0;
+    const textLength = textValue?.length ?? 0;
+    const hasErrors = Boolean(errors.text?.message);
+    const isTextValid = textValue && !hasErrors;
 
-    // Reset errors when text is cleared
     if (textValue === "") {
         reset();
     }
@@ -58,34 +60,42 @@ export default function TextGap() {
         setAnswerNumberToRemove(answerNumber);
     };
 
-    const onSubmit = (data: FormData) => {
-        setStep(step + 1);
+    const onSubmit = () => {
+        const words = textValue.trim().split(" ");
+        console.log(words);
+
+        if (words.length < 3) {
+            setError("text", {
+                message: "Text must contain at least 3 words",
+            });
+
+            return;
+        }
+
+        setStep(TextGapSteps.SELECT_WORDS);
     };
 
-    return (
-        <div>
-            <Head title="Text Gap" />
-            <Navigation />
-            <main className="max-w-3xl mx-auto">
-                {step === 1 && (
+    const handleClear = () => {
+        reset();
+        setAnswerList([]);
+    };
+
+    const renderStep = useMemo(() => {
+        switch (step) {
+            case TextGapSteps.PREPARE_TEXT:
+                return (
                     <>
                         <div className="flex gap-4 my-4 items-center">
                             <button
                                 onClick={handleSubmit(onSubmit)}
-                                disabled={
-                                    !textValue ||
-                                    errors.text?.message !== undefined
-                                }
+                                disabled={!isTextValid}
                                 className="btn btn-outline disabled:opacity-45"
                             >
                                 Prepare Text
                             </button>
                             <button
-                                onClick={() => reset()}
-                                disabled={
-                                    !textValue ||
-                                    errors.text?.message !== undefined
-                                }
+                                onClick={handleClear}
+                                disabled={!isTextValid}
                                 className="btn btn-outline disabled:opacity-45"
                             >
                                 Clear
@@ -104,12 +114,14 @@ export default function TextGap() {
                                 placeholder="Paste your text here..."
                             ></textarea>
                             <span className="absolute right-4 bottom-4  text-gray-400">
-                                {textLength}/600
+                                {textLength}/{MAX_TEXT_LENGTH}
                             </span>
                         </form>
                     </>
-                )}
-                {step === 2 && (
+                );
+
+            case TextGapSteps.SELECT_WORDS:
+                return (
                     <>
                         <WordsSelection
                             answerList={answerList}
@@ -124,8 +136,17 @@ export default function TextGap() {
                             answerList={answerList}
                         />
                     </>
-                )}
-            </main>
+                );
+            default:
+                return null;
+        }
+    }, [step, textValue, errors, textLength, answerList, answerNumberToRemove]);
+
+    return (
+        <div>
+            <Head title="Text Gap" />
+            <Navigation />
+            <main className="max-w-3xl mx-auto">{renderStep}</main>
             <Informations
                 title="Instruction for Text GAP"
                 stepsList={stepsList}
