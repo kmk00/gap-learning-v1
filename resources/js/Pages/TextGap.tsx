@@ -2,14 +2,27 @@ import { Head } from "@inertiajs/react";
 import Navigation from "./Sections/Navigation";
 import Informations from "./Sections/Informations";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { set, useForm } from "react-hook-form";
+import { useForm } from "react-hook-form";
 import * as z from "zod";
-import { useCallback, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import WordsSelection from "./TextGap/WordsSelection";
-import { Answer, TextGapSteps } from "@/types";
 import AnswerList from "./TextGap/AnswerList";
 
 const MAX_TEXT_LENGTH = 1000;
+
+//! TODO FIX IMPORT ERROR
+export type Answer = {
+    readonly index: number;
+    readonly answerWord: string;
+    selected: boolean;
+    answerNumber: number | null;
+};
+
+export enum TextGapSteps {
+    PREPARE_TEXT = 1,
+    SELECT_WORDS = 2,
+    SAVE_EXERCISE = 3,
+}
 
 const textSchema = z.object({
     text: z
