@@ -7,6 +7,7 @@ import * as z from "zod";
 import { useMemo, useState } from "react";
 import WordsSelection from "./TextGap/WordsSelection";
 import AnswerList from "./TextGap/AnswerList";
+import FinalPage from "./TextGap/FinalPage";
 
 const MAX_TEXT_LENGTH = 1000;
 
@@ -18,6 +19,7 @@ export type Answer = {
     answerNumber: number | null;
 };
 
+//! TODO Move to separate file
 export enum TextGapSteps {
     PREPARE_TEXT = 1,
     SELECT_WORDS = 2,
@@ -149,6 +151,10 @@ export default function TextGap() {
                         />
                     </>
                 );
+
+            case TextGapSteps.SAVE_EXERCISE:
+                return <FinalPage />;
+
             default:
                 return null;
         }

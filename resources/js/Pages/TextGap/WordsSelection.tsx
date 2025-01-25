@@ -86,9 +86,14 @@ const WordsSelection = ({
         });
     };
 
+    // TODO Use Global Steps
     const handleEditButton = () => {
         setAnswerList([]);
         setStep(1);
+    };
+
+    const handleAnswerButton = () => {
+        setStep(3);
     };
 
     const renderWords = useCallback(() => {
@@ -116,10 +121,7 @@ const WordsSelection = ({
                 </button>
                 <button
                     type="button"
-                    onClick={() => {
-                        console.log(textAsArray);
-                        console.log(answerList);
-                    }}
+                    onClick={handleAnswerButton}
                     className="btn btn-outline disabled:opacity-45"
                 >
                     Answer
