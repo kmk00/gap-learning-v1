@@ -1,5 +1,5 @@
 import { Answer } from "@/types";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 
 type Props = {
     text: string;
@@ -40,19 +40,7 @@ const WordsSelection = ({
                 return w;
             });
 
-            const finalArray = updatedArray.map((w) => {
-                if (!w.selected) return w;
-
-                const numberBefore = updatedArray.filter(
-                    (other) => other.selected && other.index < w.index
-                ).length;
-
-                return { ...w, answerNumber: numberBefore + 1 };
-            });
-
-            const selectedWords = finalArray
-                .filter((w) => w.selected)
-                .sort((a, b) => a.index - b.index);
+            const { finalArray, selectedWords } = prepareArrays(updatedArray);
 
             setAnswerList(selectedWords);
             setAnswerNumberToRemove(null);
@@ -60,12 +48,29 @@ const WordsSelection = ({
         });
     }, [answerNumberToRemove]);
 
+    const prepareArrays = (arr: Answer[]) => {
+        const finalArray = arr.map((w) => {
+            if (!w.selected) return w;
+
+            const numberBefore = arr.filter(
+                (other) => other.selected && other.index < w.index
+            ).length;
+
+            return { ...w, answerNumber: numberBefore + 1 };
+        });
+
+        const selectedWords = finalArray
+            .filter((w) => w.selected)
+            .sort((a, b) => a.index - b.index);
+
+        return { finalArray, selectedWords };
+    };
+
     const handleSelectWord = (word: Answer) => {
         if (word.selected) {
             return;
         }
         setTextAsArray((prev) => {
-            // First, mark the new word as selected
             const updatedArray = prev.map((w) => {
                 if (w.index === word.index) {
                     return { ...w, selected: true };
@@ -73,22 +78,7 @@ const WordsSelection = ({
                 return w;
             });
 
-            // Then reassign all answer numbers based on position
-            const finalArray = updatedArray.map((w) => {
-                if (!w.selected) return w;
-
-                // Count how many selected words come before this one
-                const numberBefore = updatedArray.filter(
-                    (other) => other.selected && other.index < w.index
-                ).length;
-
-                return { ...w, answerNumber: numberBefore + 1 };
-            });
-
-            // Update answer list with all selected words in order
-            const selectedWords = finalArray
-                .filter((w) => w.selected)
-                .sort((a, b) => a.index - b.index);
+            const { finalArray, selectedWords } = prepareArrays(updatedArray);
 
             setAnswerList(selectedWords);
 
@@ -96,18 +86,36 @@ const WordsSelection = ({
         });
     };
 
-    const selectedWords = textAsArray.filter((word) => word.selected);
+    const handleEditButton = () => {
+        setAnswerList([]);
+        setStep(1);
+    };
+
+    const renderWords = useCallback(() => {
+        return textAsArray.map((word, index) => (
+            <p
+                className="hover:bg-secondary-content/20 cursor-pointer hover:text-secondary p-1 rounded-md"
+                key={index}
+                onClick={() => handleSelectWord(word)}
+                data-word={word}
+            >
+                {word.selected ? `...${word.answerNumber}...` : word.answerWord}
+            </p>
+        ));
+    }, [textAsArray]);
 
     return (
         <div>
             <div className="flex gap-4 my-4 items-center">
                 <button
-                    onClick={() => setStep(1)}
+                    type="button"
+                    onClick={handleEditButton}
                     className="btn btn-outline disabled:opacity-45"
                 >
                     Edit text
                 </button>
                 <button
+                    type="button"
                     onClick={() => {
                         console.log(textAsArray);
                         console.log(answerList);
@@ -117,20 +125,7 @@ const WordsSelection = ({
                     Answer
                 </button>
             </div>
-            <div className="flex gap-4 flex-wrap mt-4 ">
-                {textAsArray.map((word, index) => (
-                    <p
-                        className="hover:bg-secondary-content/20 cursor-pointer hover:text-secondary p-1 rounded-md"
-                        key={index}
-                        onClick={() => handleSelectWord(word)}
-                        data-word={word}
-                    >
-                        {word.selected
-                            ? `...${word.answerNumber}...`
-                            : word.answerWord}
-                    </p>
-                ))}
-            </div>
+            <div className="flex gap-4 flex-wrap mt-4 ">{renderWords()}</div>
             <hr className="my-12 border-primary lg:my-20" />
         </div>
     );

@@ -75,7 +75,6 @@ export default function TextGap() {
 
     const onSubmit = () => {
         const words = textValue.trim().split(" ");
-        console.log(words);
 
         if (words.length < 3) {
             setError("text", {
