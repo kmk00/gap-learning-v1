@@ -19,10 +19,6 @@ const PrepareTextStep = () => {
     const { setStep, setExerciseTextArray, exerciseTextArray } =
         useExerciseStore();
 
-    const textFromExerciseTextArray = exerciseTextArray
-        .map((word) => word.answerWord)
-        .join(" ");
-
     const {
         register,
         handleSubmit,
@@ -32,9 +28,6 @@ const PrepareTextStep = () => {
         watch,
     } = useForm<FormData>({
         resolver: zodResolver(textSchema),
-        defaultValues: {
-            text: textFromExerciseTextArray,
-        },
     });
 
     const textValue = watch("text");
