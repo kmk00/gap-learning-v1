@@ -1,113 +1,72 @@
+import { TextGapSteps, useExerciseStore } from "@/store/exercise";
 import { Answer } from "@/types";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect } from "react";
 
 type Props = {
     text: string;
-    answerList: Answer[];
-    setStep: React.Dispatch<React.SetStateAction<number>>;
-    setAnswerList: React.Dispatch<React.SetStateAction<Answer[]>>;
-    setAnswerNumberToRemove: React.Dispatch<
-        React.SetStateAction<number | null>
-    >;
-    answerNumberToRemove: number | null;
 };
 
-const WordsSelection = ({
-    text: textProp,
-    setStep,
-    setAnswerList,
-    answerNumberToRemove,
-    setAnswerNumberToRemove,
-    answerList,
-}: Props) => {
-    const [textAsArray, setTextAsArray] = useState<Answer[]>(
-        textProp.split(" ").map((word, index) => ({
+const WordsSelection = ({ text: textProp }: Props) => {
+    const { setStep, exerciseTextArray, setExerciseTextArray } =
+        useExerciseStore();
+
+    const handleEditButton = () => {
+        setStep(TextGapSteps.PREPARE_TEXT);
+    };
+
+    const handleAnswerButton = () => {
+        setStep(TextGapSteps.SAVE_EXERCISE);
+    };
+
+    useEffect(() => {
+        const textArray = textProp.split(" ").map((word, index) => ({
             index: index,
             answerWord: word,
             selected: false,
             answerNumber: null,
-        }))
-    );
+        }));
 
-    useEffect(() => {
-        if (answerNumberToRemove === null) return;
-
-        setTextAsArray((prev) => {
-            const updatedArray = prev.map((w) => {
-                if (w.answerNumber === answerNumberToRemove) {
-                    return { ...w, selected: false, answerNumber: null };
-                }
-                return w;
-            });
-
-            const { finalArray, selectedWords } = prepareArrays(updatedArray);
-
-            setAnswerList(selectedWords);
-            setAnswerNumberToRemove(null);
-            return finalArray;
-        });
-    }, [answerNumberToRemove]);
-
-    const prepareArrays = (arr: Answer[]) => {
-        const finalArray = arr.map((w) => {
-            if (!w.selected) return w;
-
-            const numberBefore = arr.filter(
-                (other) => other.selected && other.index < w.index
-            ).length;
-
-            return { ...w, answerNumber: numberBefore + 1 };
-        });
-
-        const selectedWords = finalArray
-            .filter((w) => w.selected)
-            .sort((a, b) => a.index - b.index);
-
-        return { finalArray, selectedWords };
-    };
+        setExerciseTextArray(textArray);
+    }, [textProp, setExerciseTextArray]);
 
     const handleSelectWord = (word: Answer) => {
         if (word.selected) {
             return;
         }
-        setTextAsArray((prev) => {
-            const updatedArray = prev.map((w) => {
-                if (w.index === word.index) {
-                    return { ...w, selected: true };
-                }
-                return w;
-            });
 
-            const { finalArray, selectedWords } = prepareArrays(updatedArray);
+        let answerNumber = 0;
 
-            setAnswerList(selectedWords);
+        const updatedArray = exerciseTextArray.map((w) => {
+            if (w.index === word.index) {
+                return {
+                    ...w,
+                    selected: true,
+                    answerNumber: ++answerNumber,
+                };
+            }
 
-            return finalArray;
+            if (w.selected) {
+                w.answerNumber = ++answerNumber;
+            }
+
+            return w;
         });
-    };
 
-    // TODO Use Global Steps
-    const handleEditButton = () => {
-        setAnswerList([]);
-        setStep(1);
-    };
-
-    const handleAnswerButton = () => {
-        setStep(3);
+        setExerciseTextArray(updatedArray);
     };
 
     const renderWords = useCallback(() => {
-        return textAsArray.map((word, index) => (
+        return exerciseTextArray.map((word, index) => (
             <p
                 className="hover:bg-secondary-content/20 cursor-pointer hover:text-secondary p-1 rounded-md"
-                key={index}
                 onClick={() => handleSelectWord(word)}
+                key={index}
                 data-word={word}
             >
                 {word.selected ? `...${word.answerNumber}...` : word.answerWord}
             </p>
         ));
-    }, [textAsArray]);
+    }, [exerciseTextArray]);
 
     return (
         <div>

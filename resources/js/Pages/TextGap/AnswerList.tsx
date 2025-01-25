@@ -1,30 +1,47 @@
+import { useExerciseStore } from "@/store/exercise";
 import { Answer } from "@/types";
-import { useEffect, useState } from "react";
 
-type Props = {
-    answerList: Answer[];
-    removeAnswerByNumber: (answerNumber: number) => void;
-};
+const AnswerList = () => {
+    const { exerciseTextArray, setExerciseTextArray } = useExerciseStore();
 
-const AnswerList = ({ answerList, removeAnswerByNumber }: Props) => {
-    const [answerListSorted, setAnswerListSorted] =
-        useState<Answer[]>(answerList);
+    if (exerciseTextArray.length === 0) {
+        return null;
+    }
 
-    useEffect(() => {
-        answerList.sort((a, b) => a.answerNumber! - b.answerNumber!);
+    const answerList = exerciseTextArray.filter((word) => word.selected);
 
-        setAnswerListSorted(answerList);
-    }, [answerList]);
+    const handleRemoveWord = (wordToRemove: Answer) => {
+        const updatedArray = exerciseTextArray.map((word) => {
+            if (word.answerNumber === wordToRemove.answerNumber) {
+                return {
+                    ...word,
+                    selected: false,
+                    answerNumber: null,
+                };
+            }
+
+            if (word.answerNumber && word.index > wordToRemove.index) {
+                return {
+                    ...word,
+                    answerNumber: word.answerNumber - 1,
+                };
+            }
+            return word;
+        });
+        setExerciseTextArray(updatedArray);
+    };
 
     return (
         <div>
-            {answerListSorted.map((word, index) => (
+            {answerList.map((word, index) => (
                 <div className="flex items-center gap-2" key={index}>
                     <p>
                         ({word.answerNumber}) {word.answerWord}
                     </p>
                     <button
-                        onClick={() => removeAnswerByNumber(word.answerNumber!)}
+                        onClick={() => {
+                            handleRemoveWord(word);
+                        }}
                         className="text-red-500 hover:text-red-700"
                         aria-label="Remove word"
                     >

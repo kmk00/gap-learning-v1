@@ -4,27 +4,13 @@ import Informations from "./Sections/Informations";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
-import { useMemo, useState } from "react";
+import { useMemo } from "react";
 import WordsSelection from "./TextGap/WordsSelection";
 import AnswerList from "./TextGap/AnswerList";
 import FinalPage from "./TextGap/FinalPage";
+import { TextGapSteps, useExerciseStore } from "@/store/exercise";
 
 const MAX_TEXT_LENGTH = 1000;
-
-//! TODO FIX IMPORT ERROR
-export type Answer = {
-    readonly index: number;
-    readonly answerWord: string;
-    selected: boolean;
-    answerNumber: number | null;
-};
-
-//! TODO Move to separate file
-export enum TextGapSteps {
-    PREPARE_TEXT = 1,
-    SELECT_WORDS = 2,
-    SAVE_EXERCISE = 3,
-}
 
 const textSchema = z.object({
     text: z
@@ -44,11 +30,7 @@ const stepsList = [
 ];
 
 export default function TextGap() {
-    const [step, setStep] = useState<TextGapSteps>(TextGapSteps.PREPARE_TEXT);
-    const [answerList, setAnswerList] = useState<Answer[]>([]);
-    const [answerNumberToRemove, setAnswerNumberToRemove] = useState<
-        number | null
-    >(null);
+    const { step, setStep, setAnswerNumberToRemove } = useExerciseStore();
 
     const {
         register,
@@ -70,11 +52,6 @@ export default function TextGap() {
         reset();
     }
 
-    const handleRemoveAnswerByNumber = (answerNumber: number) => {
-        if (!answerNumber) return;
-        setAnswerNumberToRemove(answerNumber);
-    };
-
     const onSubmit = () => {
         const words = textValue.trim().split(" ");
 
@@ -91,7 +68,6 @@ export default function TextGap() {
 
     const handleClear = () => {
         reset();
-        setAnswerList([]);
     };
 
     const renderStep = useMemo(() => {
@@ -137,18 +113,8 @@ export default function TextGap() {
             case TextGapSteps.SELECT_WORDS:
                 return (
                     <>
-                        <WordsSelection
-                            answerList={answerList}
-                            setStep={setStep}
-                            setAnswerList={setAnswerList}
-                            setAnswerNumberToRemove={setAnswerNumberToRemove}
-                            answerNumberToRemove={answerNumberToRemove}
-                            text={textValue}
-                        />
-                        <AnswerList
-                            removeAnswerByNumber={handleRemoveAnswerByNumber}
-                            answerList={answerList}
-                        />
+                        <WordsSelection text={textValue} />
+                        <AnswerList />
                     </>
                 );
 
@@ -158,7 +124,7 @@ export default function TextGap() {
             default:
                 return null;
         }
-    }, [step, textValue, errors, textLength, answerList, answerNumberToRemove]);
+    }, [step, textValue, errors, textLength]);
 
     return (
         <div>
