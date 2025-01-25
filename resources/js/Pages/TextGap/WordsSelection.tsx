@@ -1,12 +1,7 @@
 import { TextGapSteps, useExerciseStore } from "@/store/exercise";
 import { Answer } from "@/types";
-import { useCallback, useEffect } from "react";
 
-type Props = {
-    text: string;
-};
-
-const WordsSelection = ({ text: textProp }: Props) => {
+const WordsSelection = () => {
     const { setStep, exerciseTextArray, setExerciseTextArray } =
         useExerciseStore();
 
@@ -17,17 +12,6 @@ const WordsSelection = ({ text: textProp }: Props) => {
     const handleAnswerButton = () => {
         setStep(TextGapSteps.SAVE_EXERCISE);
     };
-
-    useEffect(() => {
-        const textArray = textProp.split(" ").map((word, index) => ({
-            index: index,
-            answerWord: word,
-            selected: false,
-            answerNumber: null,
-        }));
-
-        setExerciseTextArray(textArray);
-    }, [textProp, setExerciseTextArray]);
 
     const handleSelectWord = (word: Answer) => {
         if (word.selected) {
@@ -55,7 +39,7 @@ const WordsSelection = ({ text: textProp }: Props) => {
         setExerciseTextArray(updatedArray);
     };
 
-    const renderWords = useCallback(() => {
+    const renderWords = () => {
         return exerciseTextArray.map((word, index) => (
             <p
                 className="hover:bg-secondary-content/20 cursor-pointer hover:text-secondary p-1 rounded-md"
@@ -66,7 +50,7 @@ const WordsSelection = ({ text: textProp }: Props) => {
                 {word.selected ? `...${word.answerNumber}...` : word.answerWord}
             </p>
         ));
-    }, [exerciseTextArray]);
+    };
 
     return (
         <div>
